@@ -3,6 +3,7 @@ import {CloneTab, GroupsTab, RegionTab} from '@pokechallenge/navigation/tab';
 import {createDrawerNavigator} from '@react-navigation/drawer';
 import {Login} from '@pokechallenge/screens';
 import * as React from 'react';
+import {NavBarAvatar} from '../../components/atoms';
 
 const Drawer = createDrawerNavigator();
 
@@ -10,7 +11,7 @@ const screenOptions = {
   headerShown: true,
   headerTitleAlign: 'center',
   headerTitle: () => <NavBarLogo />,
-  headerRight: () => <NavBarLogout />,
+  headerRight: () => <NavBarAvatar />,
 };
 
 export const RegionScreen = () => {

@@ -25,6 +25,8 @@ export const color = {
   green: ['#4DAD5B'],
   orange: ['#EE6B2F'],
   gray: ['#919191', '#313131', '#232323', '#F5F5F5'],
+  google: ['#DE5246'],
+  facebook: ['#3B5998'],
 };
 
 export const theme = {
@@ -34,7 +36,7 @@ export const theme = {
     ...DefaultTheme.colors,
     primary: color.red[1],
     background: color.white[0],
-    accent: color.blue[1],
+    accent: color.gray[1],
     text: color.gray[2],
   },
   fonts: {

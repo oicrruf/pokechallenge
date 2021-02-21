@@ -1,9 +1,9 @@
-import {theme} from '@pokechallenge/styles';
-import React from 'react';
-import {SafeAreaView, StatusBar} from 'react-native';
-import {Provider as PaperProvider} from 'react-native-paper';
 import {LoginScreen} from '@pokechallenge/navigation/stack';
+import {theme} from '@pokechallenge/styles';
 import {NavigationContainer} from '@react-navigation/native';
+import React from 'react';
+import {StatusBar} from 'react-native';
+import {Provider as PaperProvider} from 'react-native-paper';
 
 const App = () => {
   return (

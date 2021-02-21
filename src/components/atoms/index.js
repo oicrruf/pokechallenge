@@ -2,7 +2,7 @@ import {color, font} from '@pokechallenge/styles';
 import {useNavigation} from '@react-navigation/native';
 import React from 'react';
 import {Image, Text as RNText} from 'react-native';
-import {IconButton} from 'react-native-paper';
+import {IconButton, Avatar} from 'react-native-paper';
 
 export const Text = ({children, style = null}) => {
   return (
@@ -19,13 +19,17 @@ export const NavBarLogo = () => {
   );
 };
 
-export const NavBarLogout = () => {
+export const NavBarAvatar = () => {
   const navigation = useNavigation();
+
   return (
-    <IconButton
-      icon="logout"
-      color={color.black[0]}
-      onPress={() => navigation.navigate('Login')}
+    <Avatar.Image
+      style={{marginRight: 15}}
+      size={24}
+      source={{
+        uri:
+          'https://lh3.googleusercontent.com/a-/AOh14GjyfEu9M1DWOX07QPaSsNGpvwKu7GAGdhjVWXK5Sg=s96-c',
+      }}
     />
   );
 };
