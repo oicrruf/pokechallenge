@@ -1,24 +1,52 @@
 import {Text} from '@pokechallenge/components/atoms';
 import {color, font} from '@pokechallenge/styles';
 import React from 'react';
-import {ActivityIndicator, StyleSheet, View} from 'react-native';
-import {Image} from 'react-native-elements';
+import {StyleSheet, View} from 'react-native';
+import {Button} from 'react-native-paper';
 import {heightPercentageToDP as hp} from 'react-native-responsive-screen';
 
-export const Login = () => {
-  const image = require('@pokechallenge/assets/images/pokeball.png');
+export const Login = ({navigation}) => {
   return (
     <>
       <View style={styles.container}>
-        <Image
-          source={image}
-          style={{width: 150, height: 150, marginBottom: 40}}
-          PlaceholderContent={<ActivityIndicator />}
-        />
-        <Text style={styles.appName}>PokeChallenge</Text>
-        <Text style={styles.lg}>Font: Large</Text>
-        <Text style={styles.normal}>Font: Normal</Text>
-        <Text style={styles.small}>Font: Small</Text>
+        <View>
+          <Button
+            onPress={() => {
+              navigation.navigate('Region');
+            }}>
+            Login
+          </Button>
+        </View>
+      </View>
+    </>
+  );
+};
+
+export const Region = ({navigation}) => {
+  return (
+    <>
+      <View style={styles.container}>
+        <Text style={styles.appName}>Region</Text>
+      </View>
+    </>
+  );
+};
+
+export const Groups = ({navigation}) => {
+  return (
+    <>
+      <View style={styles.container}>
+        <Text style={styles.appName}>Groups</Text>
+      </View>
+    </>
+  );
+};
+
+export const Clone = ({navigation}) => {
+  return (
+    <>
+      <View style={styles.container}>
+        <Text style={styles.appName}>Clone</Text>
       </View>
     </>
   );
@@ -29,10 +57,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     height: hp(100),
-    backgroundColor: color.gray[2],
+    backgroundColor: color.white[0],
   },
-  appName: {color: color.yellow[0], fontSize: hp(5), marginBottom: hp(2)},
-  small: {color: color.blue[0], fontSize: font.small},
-  normal: {color: color.red[0], fontSize: font.normal},
-  lg: {color: color.green[0], fontSize: font.lg},
+  appName: {color: color.blue[0], fontSize: font.lg, marginBottom: hp(2)},
 });
