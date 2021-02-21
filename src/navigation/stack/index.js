@@ -9,10 +9,10 @@ const screenOptionStyle = {
   headerShown: false,
 };
 
-export const LoginScreen = () => {
+export const LoginScreen = (props) => {
   return (
     <Stack.Navigator screenOptions={screenOptionStyle}>
-      <Stack.Screen name="Login" component={Login} />
+      <Stack.Screen name="Login" component={Login} user={props.usuario} />
       <Stack.Screen name="Region" component={RegionScreen} />
     </Stack.Navigator>
   );

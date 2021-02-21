@@ -4,6 +4,7 @@ import {NavigationContainer} from '@react-navigation/native';
 import React from 'react';
 import {StatusBar} from 'react-native';
 import {Provider as PaperProvider} from 'react-native-paper';
+import {UserProvider, useUser} from '@pokechallenge/context';
 
 const App = () => {
   return (
@@ -17,4 +18,9 @@ const App = () => {
     </>
   );
 };
-export default App;
+
+export default () => (
+  <UserProvider>
+    <App />
+  </UserProvider>
+);

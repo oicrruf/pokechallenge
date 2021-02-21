@@ -6,7 +6,17 @@ import {IconButton, Avatar} from 'react-native-paper';
 
 export const Text = ({children, style = null}) => {
   return (
-    <RNText style={[{fontFamily: font.regular, ...style}]}>{children}</RNText>
+    <RNText
+      style={[
+        {
+          fontFamily: font.regular,
+          color: color.gray[1],
+          fontSize: 14,
+          ...style,
+        },
+      ]}>
+      {children}
+    </RNText>
   );
 };
 
@@ -24,11 +34,11 @@ export const NavBarAvatar = () => {
 
   return (
     <Avatar.Image
-      style={{marginRight: 15}}
-      size={24}
+      style={{marginRight: 15, backgroundColor: color.white[0]}}
+      size={25}
       source={{
         uri:
-          'https://lh3.googleusercontent.com/a-/AOh14GjyfEu9M1DWOX07QPaSsNGpvwKu7GAGdhjVWXK5Sg=s96-c',
+          'https://assets.pokemon.com/static2/_ui/img/chrome/profile-navigation/profile-nav-signup.png',
       }}
     />
   );

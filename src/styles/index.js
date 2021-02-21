@@ -10,9 +10,9 @@ export const font = {
   medium: 'Ubuntu-Medium',
   mediumItalic: 'Ubuntu-MediumItalic',
   regular: 'Ubuntu-Regular',
-  lg: hp(3),
-  normal: hp(2),
-  small: hp(1.5),
+  lg: 18,
+  normal: 14,
+  small: 11,
 };
 
 export const color = {
