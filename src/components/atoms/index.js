@@ -10,7 +10,7 @@ export const Text = ({children, style = null}) => {
       style={[
         {
           fontFamily: font.regular,
-          color: color.gray[1],
+          color: color.gray[0],
           fontSize: 14,
           ...style,
         },

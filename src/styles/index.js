@@ -1,5 +1,4 @@
 import {DefaultTheme} from 'react-native-paper';
-import {heightPercentageToDP as hp} from 'react-native-responsive-screen';
 
 export const font = {
   bold: 'Ubuntu-Bold',
@@ -34,7 +33,7 @@ export const theme = {
   roundness: 5,
   colors: {
     ...DefaultTheme.colors,
-    primary: color.red[1],
+    primary: color.blue[0],
     background: color.white[0],
     accent: color.gray[1],
     text: color.gray[2],
