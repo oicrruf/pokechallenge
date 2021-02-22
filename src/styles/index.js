@@ -1,5 +1,4 @@
 import {DefaultTheme} from 'react-native-paper';
-import {heightPercentageToDP as hp} from 'react-native-responsive-screen';
 
 export const font = {
   bold: 'Ubuntu-Bold',
@@ -10,9 +9,9 @@ export const font = {
   medium: 'Ubuntu-Medium',
   mediumItalic: 'Ubuntu-MediumItalic',
   regular: 'Ubuntu-Regular',
-  lg: hp(3),
-  normal: hp(2),
-  small: hp(1.5),
+  lg: 18,
+  normal: 14,
+  small: 11,
 };
 
 export const color = {
@@ -25,6 +24,8 @@ export const color = {
   green: ['#4DAD5B'],
   orange: ['#EE6B2F'],
   gray: ['#919191', '#313131', '#232323', '#F5F5F5'],
+  google: ['#DE5246'],
+  facebook: ['#3B5998'],
 };
 
 export const theme = {
@@ -32,9 +33,9 @@ export const theme = {
   roundness: 5,
   colors: {
     ...DefaultTheme.colors,
-    primary: color.red[1],
+    primary: color.blue[0],
     background: color.white[0],
-    accent: color.blue[1],
+    accent: color.gray[1],
     text: color.gray[2],
   },
   fonts: {

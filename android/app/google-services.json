@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "293885740534",
+    "project_id": "pokechallenge-8bccd",
+    "storage_bucket": "pokechallenge-8bccd.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:293885740534:android:2d5e187b7183b608b8f3d7",
+        "android_client_info": {
+          "package_name": "com.pokechallenge"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "293885740534-3butaf6t3vpaid9ij70cfp8lqkl6dk89.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.pokechallenge",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "293885740534-hu5vk3rb6ava1s4efnb1e2e7somiuamq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAoc9fJNZjWD0tynHFk7Puiv7wd7DWCxkE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "293885740534-hu5vk3rb6ava1s4efnb1e2e7somiuamq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

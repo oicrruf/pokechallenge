@@ -2,11 +2,21 @@ import {color, font} from '@pokechallenge/styles';
 import {useNavigation} from '@react-navigation/native';
 import React from 'react';
 import {Image, Text as RNText} from 'react-native';
-import {IconButton} from 'react-native-paper';
+import {IconButton, Avatar} from 'react-native-paper';
 
 export const Text = ({children, style = null}) => {
   return (
-    <RNText style={[{fontFamily: font.regular, ...style}]}>{children}</RNText>
+    <RNText
+      style={[
+        {
+          fontFamily: font.regular,
+          color: color.gray[0],
+          fontSize: 14,
+          ...style,
+        },
+      ]}>
+      {children}
+    </RNText>
   );
 };
 
@@ -19,13 +29,17 @@ export const NavBarLogo = () => {
   );
 };
 
-export const NavBarLogout = () => {
+export const NavBarAvatar = () => {
   const navigation = useNavigation();
+
   return (
-    <IconButton
-      icon="logout"
-      color={color.black[0]}
-      onPress={() => navigation.navigate('Login')}
+    <Avatar.Image
+      style={{marginRight: 15, backgroundColor: color.white[0]}}
+      size={25}
+      source={{
+        uri:
+          'https://assets.pokemon.com/static2/_ui/img/chrome/profile-navigation/profile-nav-signup.png',
+      }}
     />
   );
 };
