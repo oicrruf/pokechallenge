@@ -4,6 +4,7 @@ import firebase, {validateEmail} from '@pokechallenge/utils';
 import CheckBox from '@react-native-community/checkbox';
 import {useRoute} from '@react-navigation/native';
 import axios from 'axios';
+import 'firebase/firestore';
 import React, {useEffect, useState} from 'react';
 import {
   FlatList,
@@ -12,14 +13,18 @@ import {
   StyleSheet,
   TouchableWithoutFeedback,
   View,
+  ToastAndroid,
 } from 'react-native';
-import {Avatar, ListItem} from 'react-native-elements';
 import Spinner from 'react-native-loading-spinner-overlay';
 import {Button, Dialog, Portal, TextInput} from 'react-native-paper';
 import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from 'react-native-responsive-screen';
+
+firebase.firestore().settings({experimentalForceLongPolling: true});
+
+const db = firebase.firestore(firebase);
 
 export const Login = (props) => {
   const [loading, setLoading] = useState(false);
@@ -286,7 +291,7 @@ export const Region = (props) => {
               resizeMode: 'contain',
               alignSelf: 'center',
               width: '100%',
-              borderRadius: 5,
+              borderRadius: 3,
             }}
             source={require('@pokechallenge/assets/images/map.jpg')}
           />
@@ -628,8 +633,8 @@ export const Pokemons = (props) => {
   const {pokemons} = route.params;
   const [pokemonsEncounters, setPokemonsEncounters] = useState([]);
   const [counter, setCounter] = useState(0);
-
   const [visible, setVisible] = React.useState(false);
+  const {email, uid} = firebase.auth().currentUser;
 
   const hideDialog = () => setVisible(false);
 
@@ -734,7 +739,26 @@ export const Pokemons = (props) => {
           uppercase={false}
           labelStyle={{color: color.white[0]}}
           onPress={() => {
-            console.log('kjhhkjhk');
+            let newGroup = {group: []};
+            for (const key in select) {
+              newGroup.group.push(pokemonsEncounters[key]);
+            }
+            db.collection(uid)
+              .add(newGroup)
+              .then(() =>
+                ToastAndroid.show(
+                  'You have created a new group!',
+                  ToastAndroid.LONG,
+                ),
+              )
+              .then(() => {
+                setTimeout(() => {
+                  setSelect({});
+                }, 1000);
+              })
+              .catch((e) => {
+                console.log(e);
+              });
           }}>
           Create Group
         </Button>

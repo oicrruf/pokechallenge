@@ -3,11 +3,15 @@ import {LoginScreen} from '@pokechallenge/navigation/stack';
 import {Themes} from '@pokechallenge/styles';
 import firebase from '@pokechallenge/utils';
 import {NavigationContainer} from '@react-navigation/native';
+import {decode, encode} from 'base-64';
 import 'firebase/auth';
 import React, {useEffect, useState} from 'react';
-import {StatusBar} from 'react-native';
+import {YellowBox, StatusBar} from 'react-native';
 import {Provider as PaperProvider} from 'react-native-paper';
-import {ThemeProvider as ElementProvider} from 'react-native-elements';
+
+if (!global.btoa) global.btoa = encode;
+if (!global.atob) global.atob = decode;
+YellowBox.ignoreWarnings(['Setting a timer']);
 
 export default App = () => {
   const {paper} = Themes;
