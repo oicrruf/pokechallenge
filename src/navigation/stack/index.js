@@ -2,7 +2,14 @@ import * as React from 'react';
 import {createStackNavigator} from '@react-navigation/stack';
 import {Login, Register} from '@pokechallenge/screens';
 import {font} from '@pokechallenge/styles';
-import {Region, Locations, Groups, Clone} from '@pokechallenge/screens';
+import {
+  Region,
+  Locations,
+  Areas,
+  Pokemons,
+  Groups,
+  Clone,
+} from '@pokechallenge/screens';
 
 const Stack = createStackNavigator();
 
@@ -10,7 +17,7 @@ const screenOptionStyle = {
   headerShown: false,
 };
 
-export const LoginScreen = (props) => {
+export const LoginScreen = () => {
   return (
     <Stack.Navigator screenOptions={screenOptionStyle}>
       <Stack.Screen name="Login" component={Login} />
@@ -19,25 +26,18 @@ export const LoginScreen = (props) => {
   );
 };
 
-export const RegionScreen = (props) => {
+export const RegionScreen = () => {
   return (
     <Stack.Navigator screenOptions={screenOptionStyle}>
       <Stack.Screen name="Region" component={Region} />
       <Stack.Screen name="Locations" component={Locations} />
-      {/* <Stack.Screen name="Areas" component={Areas} /> */}
+      <Stack.Screen name="Areas" component={Areas} />
+      <Stack.Screen name="Pokemons" component={Pokemons} />
     </Stack.Navigator>
   );
 };
 
-// export const LocationsScreen = (props) => {
-//   return (
-//     <Stack.Navigator screenOptions={screenOptionStyle}>
-//       <Stack.Screen name="Locations" component={Locations} />
-//     </Stack.Navigator>
-//   );
-// };
-
-export const RegisterScreen = (props) => {
+export const RegisterScreen = () => {
   return (
     <Stack.Navigator>
       <Stack.Screen

@@ -315,12 +315,26 @@ export const Locations = (props) => {
 
   const next = () => {
     let selectList = [];
+    let areas = [];
     for (const key in select) {
       if (select[key]) {
         selectList.push(key);
       }
     }
-    return selectList;
+    selectList.map((a) => {
+      axios
+        .get(`https://pokeapi.co/api/v2/location/${a}/`)
+        .then((response) => {
+          response.data.areas.map((l) => {
+            areas.push(l);
+          });
+        })
+        .catch((e) => {
+          console.log(e);
+          throw e;
+        });
+    });
+    return areas;
   };
 
   const getLocations = (region) => {
@@ -347,7 +361,6 @@ export const Locations = (props) => {
         delete select[key];
       }
     }
-    console.log(select);
   }, [select]);
 
   useEffect(() => {
@@ -397,7 +410,7 @@ export const Locations = (props) => {
           style={{
             backgroundColor: color.green[0],
           }}
-          contentStyle={{height: 35}}
+          contentStyle={{height: 35, flexDirection: 'row-reverse'}}
           icon={'undo'}
           mode="contained"
           loading={false}
@@ -440,6 +453,304 @@ export const Locations = (props) => {
           scrollEnabled={true}
           keyExtractor={keyExtractor}
           data={locations}
+          renderItem={renderItem}
+        />
+      </View>
+    </>
+  );
+};
+
+export const Areas = (props) => {
+  const {route, navigation} = props;
+  const [loading, setLoading] = useState(true);
+  const [select, setSelect] = useState({});
+  const [textContent, setTextContent] = useState('Download Areas');
+  const {areas} = route.params;
+  const [locationsArea, setLocationsArea] = useState([]);
+  const [toggleCheckBox, setToggleCheckBox] = useState(false);
+
+  const next = () => {
+    let selectList = [];
+    let pokemons = [];
+    for (const key in select) {
+      if (select[key]) {
+        selectList.push(key);
+      }
+    }
+    selectList.map((p) => {
+      axios
+        .get(`https://pokeapi.co/api/v2/location-area/${p}/`)
+        .then((response) => {
+          response.data.pokemon_encounters.map((p) => {
+            pokemons.push(p);
+          });
+        })
+        .catch((e) => {
+          console.log(e);
+          throw e;
+        });
+    });
+    console.log(pokemons);
+    return pokemons;
+  };
+
+  useEffect(() => {
+    setTimeout(() => {
+      setLocationsArea(areas);
+      setLoading(false);
+    }, 1000);
+    console.log(areas);
+  }, []);
+
+  useEffect(() => {
+    for (const key in select) {
+      if (!select[key]) {
+        delete select[key];
+      }
+    }
+  }, [select]);
+
+  useEffect(() => {
+    let allSelect = {};
+    locationsArea.map((l) => {
+      allSelect = {...allSelect, [l.name]: toggleCheckBox};
+    });
+    setSelect(allSelect);
+  }, [toggleCheckBox]);
+
+  const keyExtractor = (item, index) => index.toString();
+
+  const renderItem = ({item}) => (
+    <TouchableWithoutFeedback
+      onPress={() => {
+        if (!select[item.name]) {
+          setSelect({...select, [item.name]: true});
+        } else {
+          setSelect({...select, [item.name]: false});
+        }
+      }}>
+      <View
+        style={[
+          renderComponent.textContainer,
+          {
+            backgroundColor: select[item.name]
+              ? color.yellow[0]
+              : color.white[0],
+          },
+        ]}>
+        <Text style={renderComponent.name}>{item.name.replace(/-/g, ' ')}</Text>
+      </View>
+    </TouchableWithoutFeedback>
+  );
+
+  return (
+    <>
+      <Spinner
+        visible={loading}
+        color={color.red[0]}
+        textContent={textContent}
+        textStyle={{fontFamily: font.bold}}
+      />
+      <View style={styles.titleAction}>
+        <Text style={styles.titleActionName}>Areas</Text>
+
+        <Button
+          style={{
+            backgroundColor: color.green[0],
+          }}
+          contentStyle={{height: 35, flexDirection: 'row-reverse'}}
+          icon={'forward'}
+          mode="contained"
+          loading={false}
+          uppercase={false}
+          labelStyle={{color: color.white[0]}}
+          onPress={() => {
+            console.log(select);
+            navigation.navigate('Pokemons', {
+              pokemons: next(),
+            });
+          }}>
+          Get Pokemons
+        </Button>
+      </View>
+      <View
+        style={[
+          styles.container,
+          {
+            backgroundColor: color.gray[3],
+            padding: wp(3),
+            paddingBottom: 5,
+          },
+        ]}>
+        <View style={styles.checkBoxContainer}>
+          <CheckBox
+            disabled={false}
+            tintColors={{
+              true: color.orange[0],
+            }}
+            value={toggleCheckBox}
+            onValueChange={(value) => {
+              setToggleCheckBox(value);
+            }}
+          />
+          <Text>Select All</Text>
+        </View>
+
+        <FlatList
+          numColumns={2}
+          columnWrapperStyle={{flex: 1, justifyContent: 'space-around'}}
+          scrollEnabled={true}
+          keyExtractor={keyExtractor}
+          data={locationsArea}
+          renderItem={renderItem}
+        />
+      </View>
+    </>
+  );
+};
+
+export const Pokemons = (props) => {
+  const {route, navigation} = props;
+  const [loading, setLoading] = useState(true);
+  const [select, setSelect] = useState({});
+  const [textContent, setTextContent] = useState('Download Pokemons');
+  const {pokemons} = route.params;
+  const [pokemonsEncounters, setPokemonsEncounters] = useState([]);
+  const [toggleCheckBox, setToggleCheckBox] = useState(false);
+
+  const next = () => {
+    let selectList = [];
+    let pokemons = [];
+    for (const key in select) {
+      if (select[key]) {
+        selectList.push(key);
+      }
+    }
+    selectList.map((p) => {
+      axios
+        .get(`https://pokeapi.co/api/v2/location-area/${p}/`)
+        .then((response) => {
+          response.data.pokemon_encounters.map((p) => {
+            pokemons.push(p);
+          });
+        })
+        .catch((e) => {
+          console.log(e);
+          throw e;
+        });
+    });
+    console.log(pokemons);
+    return pokemons;
+  };
+
+  useEffect(() => {
+    setTimeout(() => {
+      setPokemonsEncounters(pokemons);
+      setLoading(false);
+    }, 1000);
+    console.log(pokemonsEncounters);
+  }, []);
+
+  useEffect(() => {
+    for (const key in select) {
+      if (!select[key]) {
+        delete select[key];
+      }
+    }
+  }, [select]);
+
+  useEffect(() => {
+    let allSelect = {};
+    pokemonsEncounters.map((l) => {
+      allSelect = {...allSelect, [l.name]: toggleCheckBox};
+    });
+    setSelect(allSelect);
+  }, [toggleCheckBox]);
+
+  const keyExtractor = (item, index) => index.toString();
+
+  const renderItem = ({item}) => (
+    <TouchableWithoutFeedback
+      onPress={() => {
+        if (!select[item.name]) {
+          setSelect({...select, [item.name]: true});
+        } else {
+          setSelect({...select, [item.name]: false});
+        }
+      }}>
+      <View
+        style={[
+          renderComponent.textContainer,
+          {
+            backgroundColor: select[item.name]
+              ? color.yellow[0]
+              : color.white[0],
+          },
+        ]}>
+        <Text style={renderComponent.name}>{item.name.replace(/-/g, ' ')}</Text>
+      </View>
+    </TouchableWithoutFeedback>
+  );
+
+  return (
+    <>
+      <Spinner
+        visible={loading}
+        color={color.red[0]}
+        textContent={textContent}
+        textStyle={{fontFamily: font.bold}}
+      />
+      <View style={styles.titleAction}>
+        <Text style={styles.titleActionName}>Pokemons</Text>
+
+        <Button
+          style={{
+            backgroundColor: color.green[0],
+          }}
+          contentStyle={{height: 35, flexDirection: 'row-reverse'}}
+          icon={'forward'}
+          mode="contained"
+          loading={false}
+          uppercase={false}
+          labelStyle={{color: color.white[0]}}
+          onPress={() => {
+            console.log(select);
+            navigation.navigate('Areas', {
+              pokemons: next(),
+            });
+          }}>
+          Get Areas
+        </Button>
+      </View>
+      <View
+        style={[
+          styles.container,
+          {
+            backgroundColor: color.gray[3],
+            padding: wp(3),
+            paddingBottom: 5,
+          },
+        ]}>
+        <View style={styles.checkBoxContainer}>
+          <CheckBox
+            disabled={false}
+            tintColors={{
+              true: color.orange[0],
+            }}
+            value={toggleCheckBox}
+            onValueChange={(value) => {
+              setToggleCheckBox(value);
+            }}
+          />
+          <Text>Select All</Text>
+        </View>
+
+        <FlatList
+          numColumns={2}
+          columnWrapperStyle={{flex: 1, justifyContent: 'space-around'}}
+          scrollEnabled={true}
+          keyExtractor={keyExtractor}
+          data={pokemonsEncounters}
           renderItem={renderItem}
         />
       </View>
