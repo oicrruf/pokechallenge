@@ -1,8 +1,9 @@
-import {Region, Groups, Clone} from '@pokechallenge/screens';
+import {Groups, Clone} from '@pokechallenge/screens';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import * as React from 'react';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {color} from '@pokechallenge/styles';
+import {RegionScreen} from '@pokechallenge/navigation/stack';
 
 const Tab = createBottomTabNavigator();
 
@@ -31,7 +32,7 @@ export const RegionTab = () => {
       screenOptions={screenOptions}
       tabBarOptions={tabBarOptions}
       initialRouteName="Region">
-      <Tab.Screen name="Region" component={Region} />
+      <Tab.Screen name="Region" component={RegionScreen} />
       <Tab.Screen name="Groups" component={Groups} />
       <Tab.Screen name="Clone" component={Clone} />
     </Tab.Navigator>
@@ -44,7 +45,7 @@ export const GroupsTab = () => {
       screenOptions={screenOptions}
       tabBarOptions={tabBarOptions}
       initialRouteName="Groups">
-      <Tab.Screen name="Region" component={Region} />
+      <Tab.Screen name="Region" component={RegionScreen} />
       <Tab.Screen name="Groups" component={Groups} />
       <Tab.Screen name="Clone" component={Clone} />
     </Tab.Navigator>
@@ -57,7 +58,7 @@ export const CloneTab = () => {
       screenOptions={screenOptions}
       tabBarOptions={tabBarOptions}
       initialRouteName="Clone">
-      <Tab.Screen name="Region" component={Region} />
+      <Tab.Screen name="Region" component={RegionScreen} />
       <Tab.Screen name="Groups" component={Groups} />
       <Tab.Screen name="Clone" component={Clone} />
     </Tab.Navigator>

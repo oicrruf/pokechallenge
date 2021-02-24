@@ -3,14 +3,25 @@ import {color, font} from '@pokechallenge/styles';
 import firebase, {validateEmail} from '@pokechallenge/utils';
 import {useRoute} from '@react-navigation/native';
 import React, {useEffect, useState} from 'react';
-import {Image, StyleSheet, TouchableWithoutFeedback, View} from 'react-native';
+import {
+  Image,
+  StyleSheet,
+  TouchableWithoutFeedback,
+  View,
+  FlatList,
+} from 'react-native';
 import Spinner from 'react-native-loading-spinner-overlay';
 import {Button, TextInput} from 'react-native-paper';
 import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from 'react-native-responsive-screen';
-import {Keyboard} from 'react-native';
+import {Keyboard, ScrollView} from 'react-native';
+import axios from 'axios';
+import {ListItem, Avatar} from 'react-native-elements';
+import {List} from 'react-native-paper';
+import {Chip} from 'react-native-paper';
+import CheckBox from '@react-native-community/checkbox';
 
 export const Login = (props) => {
   const [loading, setLoading] = useState(false);
@@ -229,22 +240,208 @@ export const Register = (props) => {
 };
 
 export const Region = (props) => {
+  const {navigation} = props;
   const [loading, setLoading] = useState(true);
   const {email, uid} = firebase.auth().currentUser;
+  const [regions, setRegions] = useState({});
   const route = useRoute();
+
+  const getRegions = () => {
+    axios
+      .get('https://pokeapi.co/api/v2/region/')
+      .then((response) => {
+        setRegions(response.data.results);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
   useEffect(() => {
-    if (email) {
-      setLoading(false);
-    }
-    console.log(email, uid);
+    getRegions();
   }, []);
+
+  const keyExtractor = (item, index) => index.toString();
+
+  const renderItem = ({item}) => (
+    <ListItem
+      bottomDivider
+      onPress={() =>
+        navigation.navigate('Locations', {
+          region: item.name,
+        })
+      }>
+      <Avatar
+        rounded
+        title={item.name[0].toUpperCase()}
+        activeOpacity={0.3}
+        overlayContainerStyle={{
+          backgroundColor: color.green[0],
+        }}
+      />
+      <ListItem.Content>
+        <ListItem.Title style={region.elementList}>{item.name}</ListItem.Title>
+      </ListItem.Content>
+      <ListItem.Chevron />
+    </ListItem>
+  );
+  const FlatListHeader = () => <Text style={styles.title}>Regions</Text>;
 
   return (
     <>
       <Spinner visible={loading} color={color.red[0]} />
       <View style={styles.container}>
-        <Text>{route.name}</Text>
-        <Text>{email}</Text>
+        <FlatList
+          scrollEnabled={true}
+          ListHeaderComponent={FlatListHeader}
+          keyExtractor={keyExtractor}
+          data={regions}
+          renderItem={renderItem}
+        />
+      </View>
+    </>
+  );
+};
+
+export const Locations = (props) => {
+  const {route, navigation} = props;
+  const [loading, setLoading] = useState(true);
+  const [select, setSelect] = useState({});
+  const [textContent, setTextContent] = useState('Download Locations');
+  const {region} = route.params;
+  const [locations, setLocations] = useState([]);
+  const [toggleCheckBox, setToggleCheckBox] = useState(false);
+
+  const next = () => {
+    let selectList = [];
+    for (const key in select) {
+      if (select[key]) {
+        selectList.push(key);
+      }
+    }
+    return selectList;
+  };
+
+  const getLocations = (region) => {
+    axios
+      .get(`https://pokeapi.co/api/v2/region/${region}/`)
+      .then((response) => {
+        const locations = response.data.locations;
+        setLocations(locations);
+        setLoading(false);
+      })
+      .catch((e) => {
+        console.log(e);
+        throw e;
+      });
+  };
+
+  useEffect(() => {
+    getLocations(region);
+  }, []);
+
+  useEffect(() => {
+    for (const key in select) {
+      if (!select[key]) {
+        delete select[key];
+      }
+    }
+    console.log(select);
+  }, [select]);
+
+  useEffect(() => {
+    let allSelect = {};
+    locations.map((l) => {
+      allSelect = {...allSelect, [l.name]: toggleCheckBox};
+    });
+    setSelect(allSelect);
+  }, [toggleCheckBox]);
+
+  const keyExtractor = (item, index) => index.toString();
+
+  const renderItem = ({item}) => (
+    <TouchableWithoutFeedback
+      onPress={() => {
+        if (!select[item.name]) {
+          setSelect({...select, [item.name]: true});
+        } else {
+          setSelect({...select, [item.name]: false});
+        }
+      }}>
+      <View
+        style={[
+          renderComponent.textContainer,
+          {
+            backgroundColor: select[item.name]
+              ? color.yellow[0]
+              : color.white[0],
+          },
+        ]}>
+        <Text style={renderComponent.name}>{item.name.replace(/-/g, ' ')}</Text>
+      </View>
+    </TouchableWithoutFeedback>
+  );
+
+  return (
+    <>
+      <Spinner
+        visible={loading}
+        color={color.red[0]}
+        textContent={textContent}
+        textStyle={{fontFamily: font.bold}}
+      />
+      <View style={styles.titleAction}>
+        <Text style={styles.titleActionName}>Locations</Text>
+        <Button
+          style={{
+            backgroundColor: color.green[0],
+          }}
+          contentStyle={{height: 35}}
+          icon={'undo'}
+          mode="contained"
+          loading={false}
+          uppercase={false}
+          labelStyle={{color: color.white[0]}}
+          onPress={() => {
+            console.log(select);
+            navigation.navigate('Areas', {
+              areas: next(),
+            });
+          }}>
+          Get Areas
+        </Button>
+      </View>
+      <View
+        style={[
+          styles.container,
+          {
+            backgroundColor: color.gray[3],
+            padding: wp(3),
+            paddingBottom: 5,
+          },
+        ]}>
+        <View style={styles.checkBoxContainer}>
+          <CheckBox
+            disabled={false}
+            tintColors={{
+              true: color.orange[0],
+            }}
+            value={toggleCheckBox}
+            onValueChange={(value) => {
+              setToggleCheckBox(value);
+            }}
+          />
+          <Text>Select All</Text>
+        </View>
+        <FlatList
+          numColumns={2}
+          columnWrapperStyle={{flex: 1, justifyContent: 'space-around'}}
+          scrollEnabled={true}
+          keyExtractor={keyExtractor}
+          data={locations}
+          renderItem={renderItem}
+        />
       </View>
     </>
   );
@@ -296,15 +493,59 @@ export const Clone = (props) => {
 
 const styles = StyleSheet.create({
   container: {
-    height: hp(100),
+    flex: 1,
     width: wp(100),
-    padding: wp(5),
     backgroundColor: color.white[0],
   },
   screenContent: {
     color: color.gray[1],
     fontSize: font.normal,
     marginBottom: hp(2),
+  },
+  title: {
+    padding: wp(5),
+    color: color.gray[2],
+    fontFamily: font.bold,
+    fontSize: font.lg,
+    backgroundColor: color.white[0],
+  },
+  titleAction: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: color.white[0],
+    paddingHorizontal: wp(5),
+    paddingVertical: 10,
+    borderWidth: 1,
+    borderColor: 'transparent',
+    borderBottomColor: color.gray[3],
+  },
+  titleActionName: {
+    color: color.gray[2],
+    fontFamily: font.bold,
+    fontSize: font.lg,
+    backgroundColor: color.white[0],
+  },
+  checkBoxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: color.white[0],
+    marginHorizontal: 3,
+    marginBottom: 10,
+    borderRadius: 5,
+  },
+});
+
+const renderComponent = StyleSheet.create({
+  textContainer: {
+    flex: 1,
+    margin: 3,
+    padding: 10,
+    borderRadius: 5,
+    elevation: 1,
+  },
+  name: {
+    textTransform: 'capitalize',
   },
 });
 
@@ -346,4 +587,8 @@ const register = StyleSheet.create({
     resizeMode: 'contain',
     width: wp(90),
   },
+});
+
+const region = StyleSheet.create({
+  elementList: {textTransform: 'capitalize', fontFamily: font.regular},
 });

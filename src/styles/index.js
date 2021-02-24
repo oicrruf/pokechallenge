@@ -28,26 +28,28 @@ export const color = {
   facebook: ['#3B5998'],
 };
 
-export const theme = {
-  ...DefaultTheme,
-  roundness: 5,
-  colors: {
-    ...DefaultTheme.colors,
-    primary: color.blue[0],
-    background: color.white[0],
-    accent: color.gray[1],
-    text: color.gray[2],
-  },
-  fonts: {
-    ...DefaultTheme.fonts,
-    regular: {
-      fontFamily: font.regular,
+export const Themes = {
+  paper: {
+    ...DefaultTheme,
+    roundness: 5,
+    colors: {
+      ...DefaultTheme.colors,
+      primary: color.blue[0],
+      background: color.white[0],
+      accent: color.gray[1],
+      text: color.gray[2],
     },
-    medium: {
-      fontFamily: font.medium,
-    },
-    light: {
-      fontFamily: font.light,
+    fonts: {
+      ...DefaultTheme.fonts,
+      regular: {
+        fontFamily: font.regular,
+      },
+      medium: {
+        fontFamily: font.medium,
+      },
+      light: {
+        fontFamily: font.light,
+      },
     },
   },
 };
