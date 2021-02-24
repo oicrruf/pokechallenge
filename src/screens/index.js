@@ -1,27 +1,25 @@
 import {Text} from '@pokechallenge/components/atoms';
 import {color, font} from '@pokechallenge/styles';
 import firebase, {validateEmail} from '@pokechallenge/utils';
+import CheckBox from '@react-native-community/checkbox';
 import {useRoute} from '@react-navigation/native';
+import axios from 'axios';
 import React, {useEffect, useState} from 'react';
 import {
+  FlatList,
   Image,
+  Keyboard,
   StyleSheet,
   TouchableWithoutFeedback,
   View,
-  FlatList,
 } from 'react-native';
+import {Avatar, ListItem} from 'react-native-elements';
 import Spinner from 'react-native-loading-spinner-overlay';
-import {Button, TextInput} from 'react-native-paper';
+import {Button, Dialog, Portal, TextInput} from 'react-native-paper';
 import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from 'react-native-responsive-screen';
-import {Keyboard, ScrollView} from 'react-native';
-import axios from 'axios';
-import {ListItem, Avatar} from 'react-native-elements';
-import {List} from 'react-native-paper';
-import {Chip} from 'react-native-paper';
-import CheckBox from '@react-native-community/checkbox';
 
 export const Login = (props) => {
   const [loading, setLoading] = useState(false);
@@ -411,7 +409,7 @@ export const Locations = (props) => {
             backgroundColor: color.green[0],
           }}
           contentStyle={{height: 35, flexDirection: 'row-reverse'}}
-          icon={'undo'}
+          icon={'forward'}
           mode="contained"
           loading={false}
           uppercase={false}
@@ -482,7 +480,7 @@ export const Areas = (props) => {
         .get(`https://pokeapi.co/api/v2/location-area/${p}/`)
         .then((response) => {
           response.data.pokemon_encounters.map((p) => {
-            pokemons.push(p);
+            pokemons.push(p.pokemon);
           });
         })
         .catch((e) => {
@@ -616,39 +614,17 @@ export const Pokemons = (props) => {
   const [textContent, setTextContent] = useState('Download Pokemons');
   const {pokemons} = route.params;
   const [pokemonsEncounters, setPokemonsEncounters] = useState([]);
-  const [toggleCheckBox, setToggleCheckBox] = useState(false);
+  const [counter, setCounter] = useState(0);
 
-  const next = () => {
-    let selectList = [];
-    let pokemons = [];
-    for (const key in select) {
-      if (select[key]) {
-        selectList.push(key);
-      }
-    }
-    selectList.map((p) => {
-      axios
-        .get(`https://pokeapi.co/api/v2/location-area/${p}/`)
-        .then((response) => {
-          response.data.pokemon_encounters.map((p) => {
-            pokemons.push(p);
-          });
-        })
-        .catch((e) => {
-          console.log(e);
-          throw e;
-        });
-    });
-    console.log(pokemons);
-    return pokemons;
-  };
+  const [visible, setVisible] = React.useState(false);
+
+  const hideDialog = () => setVisible(false);
 
   useEffect(() => {
     setTimeout(() => {
       setPokemonsEncounters(pokemons);
       setLoading(false);
     }, 1000);
-    console.log(pokemonsEncounters);
   }, []);
 
   useEffect(() => {
@@ -657,43 +633,74 @@ export const Pokemons = (props) => {
         delete select[key];
       }
     }
+    setCounter(Object.keys(select).length);
   }, [select]);
-
-  useEffect(() => {
-    let allSelect = {};
-    pokemonsEncounters.map((l) => {
-      allSelect = {...allSelect, [l.name]: toggleCheckBox};
-    });
-    setSelect(allSelect);
-  }, [toggleCheckBox]);
 
   const keyExtractor = (item, index) => index.toString();
 
-  const renderItem = ({item}) => (
+  const renderItem = ({item, index}) => (
     <TouchableWithoutFeedback
       onPress={() => {
-        if (!select[item.name]) {
-          setSelect({...select, [item.name]: true});
+        if (!select[index]) {
+          if (counter >= 6) {
+            setVisible(true);
+          } else {
+            setSelect({...select, [index]: true});
+          }
         } else {
-          setSelect({...select, [item.name]: false});
+          setSelect({...select, [index]: false});
         }
       }}>
       <View
         style={[
           renderComponent.textContainer,
           {
-            backgroundColor: select[item.name]
-              ? color.yellow[0]
-              : color.white[0],
+            backgroundColor: select[index] ? color.yellow[0] : color.white[0],
+            justifyContent: 'center',
+            alignItems: 'center',
           },
         ]}>
-        <Text style={renderComponent.name}>{item.name.replace(/-/g, ' ')}</Text>
+        <Image
+          style={{height: 100, width: 100}}
+          source={{
+            uri: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${parseInt(
+              item.url.split('/')[item.url.split('/').length - 2],
+            )}.png`,
+          }}
+        />
+        <Text style={renderComponent.name}>{item.name}</Text>
       </View>
     </TouchableWithoutFeedback>
   );
 
   return (
     <>
+      <Portal>
+        <Dialog visible={visible} onDismiss={hideDialog}>
+          <View style={{padding: 20}}>
+            <Image
+              style={{
+                width: wp(40),
+                height: wp(60),
+                alignSelf: 'center',
+              }}
+              source={require('@pokechallenge/assets/images/sad.png')}
+            />
+            <Text
+              style={{
+                fontSize: 16,
+                color: color.gray[1],
+                marginTop: 20,
+              }}>
+              You cannot select more than six pokemons!
+            </Text>
+          </View>
+          <Dialog.Actions>
+            <Button onPress={() => setVisible(false)}>Cancel</Button>
+            <Button onPress={() => setVisible(false)}>Ok</Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
       <Spinner
         visible={loading}
         color={color.red[0]}
@@ -701,12 +708,12 @@ export const Pokemons = (props) => {
         textStyle={{fontFamily: font.bold}}
       />
       <View style={styles.titleAction}>
-        <Text style={styles.titleActionName}>Pokemons</Text>
-
+        <Text style={styles.titleActionName}>{counter} pokemons selected</Text>
         <Button
           style={{
-            backgroundColor: color.green[0],
+            backgroundColor: counter < 3 ? color.gray[0] : color.green[0],
           }}
+          disabled={counter < 3 ? true : false}
           contentStyle={{height: 35, flexDirection: 'row-reverse'}}
           icon={'forward'}
           mode="contained"
@@ -714,12 +721,9 @@ export const Pokemons = (props) => {
           uppercase={false}
           labelStyle={{color: color.white[0]}}
           onPress={() => {
-            console.log(select);
-            navigation.navigate('Areas', {
-              pokemons: next(),
-            });
+            console.log('kjhhkjhk');
           }}>
-          Get Areas
+          Create Group
         </Button>
       </View>
       <View
@@ -731,22 +735,8 @@ export const Pokemons = (props) => {
             paddingBottom: 5,
           },
         ]}>
-        <View style={styles.checkBoxContainer}>
-          <CheckBox
-            disabled={false}
-            tintColors={{
-              true: color.orange[0],
-            }}
-            value={toggleCheckBox}
-            onValueChange={(value) => {
-              setToggleCheckBox(value);
-            }}
-          />
-          <Text>Select All</Text>
-        </View>
-
         <FlatList
-          numColumns={2}
+          numColumns={3}
           columnWrapperStyle={{flex: 1, justifyContent: 'space-around'}}
           scrollEnabled={true}
           keyExtractor={keyExtractor}
