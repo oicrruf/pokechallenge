@@ -71,7 +71,6 @@ export const Login = (props) => {
               <Text
                 style={{
                   marginBottom: hp(2),
-
                   textAlign: 'center',
                 }}>
                 Sign in with
@@ -241,7 +240,7 @@ export const Region = (props) => {
   const {navigation} = props;
   const [loading, setLoading] = useState(true);
   const {email, uid} = firebase.auth().currentUser;
-  const [regions, setRegions] = useState({});
+  const [regions, setRegions] = useState([]);
   const route = useRoute();
 
   const getRegions = () => {
@@ -255,44 +254,58 @@ export const Region = (props) => {
         console.log(error);
       });
   };
-
   useEffect(() => {
     getRegions();
   }, []);
 
   const keyExtractor = (item, index) => index.toString();
 
-  const renderItem = ({item}) => (
-    <ListItem
-      bottomDivider
-      onPress={() =>
-        navigation.navigate('Locations', {
-          region: item.name,
-        })
-      }>
-      <Avatar
-        rounded
-        title={item.name[0].toUpperCase()}
-        activeOpacity={0.3}
-        overlayContainerStyle={{
-          backgroundColor: color.green[0],
-        }}
-      />
-      <ListItem.Content>
-        <ListItem.Title style={region.elementList}>{item.name}</ListItem.Title>
-      </ListItem.Content>
-      <ListItem.Chevron />
-    </ListItem>
+  const renderItem = ({item, index}) => (
+    <>
+      <TouchableWithoutFeedback
+        onPress={() =>
+          navigation.navigate('Locations', {
+            region: item.name,
+          })
+        }>
+        <View
+          style={[
+            renderComponent.textContainer,
+            {
+              backgroundColor: color.white[0],
+              elevation: 2,
+              marginVertical: 5,
+              marginHorizontal: 10,
+              paddingHorizontal: 10,
+              paddingVertical: 0,
+              paddingBottom: 15,
+            },
+          ]}>
+          <Image
+            style={{
+              resizeMode: 'contain',
+              alignSelf: 'center',
+              width: '100%',
+              borderRadius: 5,
+            }}
+            source={require('@pokechallenge/assets/images/map.jpg')}
+          />
+          <Text style={{textTransform: 'capitalize', paddingLeft: 5}}>
+            {item.name}
+          </Text>
+        </View>
+      </TouchableWithoutFeedback>
+    </>
   );
-  const FlatListHeader = () => <Text style={styles.title}>Regions</Text>;
 
   return (
     <>
       <Spinner visible={loading} color={color.red[0]} />
-      <View style={styles.container}>
+      <Text style={styles.title}>Regions</Text>
+      <View style={[styles.container, {backgroundColor: color.gray[4]}]}>
         <FlatList
+          numColumns={2}
           scrollEnabled={true}
-          ListHeaderComponent={FlatListHeader}
           keyExtractor={keyExtractor}
           data={regions}
           renderItem={renderItem}
