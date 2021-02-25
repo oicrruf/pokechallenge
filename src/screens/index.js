@@ -11,16 +11,24 @@ import {
   Image,
   Keyboard,
   StyleSheet,
+  ToastAndroid,
   TouchableWithoutFeedback,
   View,
-  ToastAndroid,
+  Alert,
 } from 'react-native';
 import Spinner from 'react-native-loading-spinner-overlay';
-import {Button, Dialog, Portal, TextInput} from 'react-native-paper';
+import {
+  Button,
+  Dialog,
+  IconButton,
+  Portal,
+  TextInput,
+} from 'react-native-paper';
 import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from 'react-native-responsive-screen';
+import Carousel from 'react-native-snap-carousel';
 
 firebase.firestore().settings({experimentalForceLongPolling: true});
 
@@ -633,7 +641,7 @@ export const Pokemons = (props) => {
   const {pokemons} = route.params;
   const [pokemonsEncounters, setPokemonsEncounters] = useState([]);
   const [counter, setCounter] = useState(0);
-  const [visible, setVisible] = React.useState(false);
+  const [visible, setVisible] = useState(false);
   const {email, uid} = firebase.auth().currentUser;
 
   const hideDialog = () => setVisible(false);
@@ -697,19 +705,10 @@ export const Pokemons = (props) => {
         <Dialog visible={visible} onDismiss={hideDialog}>
           <View style={{padding: 20}}>
             <Image
-              style={{
-                width: wp(40),
-                height: wp(60),
-                alignSelf: 'center',
-              }}
+              style={styles.imageModal}
               source={require('@pokechallenge/assets/images/sad.png')}
             />
-            <Text
-              style={{
-                fontSize: 16,
-                color: color.gray[1],
-                marginTop: 20,
-              }}>
+            <Text style={styles.textModal}>
               You cannot select more than six pokemons!
             </Text>
           </View>
@@ -789,6 +788,9 @@ export const Groups = (props) => {
   const [loading, setLoading] = useState(true);
   const {email, uid} = firebase.auth().currentUser;
   const [group, setGroup] = useState([]);
+  const [visible, setVisible] = useState(false);
+  const [itemDelete, setItemDelete] = useState();
+  const hideDialog = () => setVisible(false);
 
   useEffect(() => {
     db.collection(uid)
@@ -801,59 +803,50 @@ export const Groups = (props) => {
           pokemons.push(data);
         });
         setGroup(pokemons);
-      })
-      .then(setLoading(false));
-    console.log(group);
-  }, []);
-
-  const keyExtractor = (item, index) => index.toString();
+      });
+    group.length > 0 && setLoading(false);
+    console.log(JSON.stringify(group, null, '  '));
+  }, [group]);
 
   const renderItem = ({item, index}) => (
-    <TouchableWithoutFeedback
-      onPress={() => {
-        console.log(item);
-      }}>
-      <View
-        style={{
-          backgroundColor: color.white[0],
-          flexDirection: 'row',
-          marginVertical: wp(1),
-          marginHorizontal: wp(2),
-          borderRadius: 5,
-          paddingVertical: 5,
-          elevation: 2,
-        }}>
+    <TouchableWithoutFeedback>
+      <View style={groups.carrousel}>
         {item.group.map((p, i) => {
           return (
-            <View
-              key={i}
-              style={{
-                height: wp(14),
-                width: wp(14),
-                marginHorizontal: wp(1),
-                borderRadius: 3,
-                justifyContent: 'center',
-              }}>
+            <View key={i} style={groups.pokemonBox}>
               <Image
-                style={{height: wp(10), width: wp(10), alignSelf: 'center'}}
+                style={groups.pokemonImage}
                 source={{
                   uri: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${parseInt(
                     p.url.split('/')[p.url.split('/').length - 2],
                   )}.png`,
                 }}
               />
-              <Text
-                style={{
-                  fontSize: 9,
-                  alignSelf: 'center',
-                  color: color.gray[2],
-                  textTransform: 'capitalize',
-                }}>
-                {p.name}
-              </Text>
+              <View style={groups.pokemonInfo}>
+                <Text style={groups.pokemonName}>{p.name}</Text>
+                <Text style={groups.pokemonId}>
+                  {parseInt(p.url.split('/')[p.url.split('/').length - 2])}
+                </Text>
+              </View>
             </View>
           );
         })}
+        <View style={groups.carrouselFooter}>
+          <IconButton
+            icon="delete"
+            color={color.gray[0]}
+            size={25}
+            onPress={() => {
+              setVisible(true), setItemDelete(item.id);
+            }}
+          />
+          <IconButton
+            icon="share"
+            color={color.gray[0]}
+            size={25}
+            onPress={() => console.log('Share')}
+          />
+        </View>
       </View>
     </TouchableWithoutFeedback>
   );
@@ -861,17 +854,50 @@ export const Groups = (props) => {
   return (
     <>
       <Spinner visible={loading} color={color.red[0]} />
-      <View style={[styles.titleAction, {height: 58}]}>
-        <Text style={styles.titleActionName}>My Groups</Text>
-        <Text style={styles.titleActionName}>{group.length}</Text>
+      <Portal>
+        <Dialog visible={visible} onDismiss={hideDialog}>
+          <View style={{padding: 20}}>
+            <Image
+              style={styles.imageModal}
+              source={require('@pokechallenge/assets/images/sad.png')}
+            />
+            <Text style={styles.textModal}>
+              Are you sure you want to delete this group?
+            </Text>
+          </View>
+          <Dialog.Actions>
+            <Button onPress={() => setVisible(false)}>Cancel</Button>
+            <Button
+              onPress={() => {
+                db.collection(uid).doc(itemDelete).delete(), setVisible(false);
+              }}>
+              Ok
+            </Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
+      <View
+        style={[
+          styles.titleAction,
+          {height: 58, backgroundColor: color.white[0]},
+        ]}>
+        <Text style={styles.titleActionName}>
+          You have a total of {group.length} groups
+        </Text>
       </View>
-
-      <View style={[styles.container, {backgroundColor: color.gray[4]}]}>
-        <FlatList
-          scrollEnabled={true}
-          keyExtractor={keyExtractor}
+      <View
+        style={[
+          styles.container,
+          {
+            backgroundColor: color.gray[4],
+            paddingVertical: hp(1),
+          },
+        ]}>
+        <Carousel
           data={group}
           renderItem={renderItem}
+          sliderWidth={wp(100)}
+          itemWidth={wp(90)}
         />
       </View>
     </>
@@ -943,6 +969,16 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     borderRadius: 5,
   },
+  imageModal: {
+    width: wp(40),
+    height: wp(60),
+    alignSelf: 'center',
+  },
+  textModal: {
+    fontSize: 16,
+    color: color.gray[1],
+    marginTop: 20,
+  },
 });
 
 const renderComponent = StyleSheet.create({
@@ -998,6 +1034,61 @@ const register = StyleSheet.create({
   },
 });
 
-const region = StyleSheet.create({
-  elementList: {textTransform: 'capitalize', fontFamily: font.regular},
+const groups = StyleSheet.create({
+  carrousel: {
+    backgroundColor: color.white[0],
+    marginVertical: wp(1),
+    marginHorizontal: wp(2),
+    borderRadius: 5,
+    paddingVertical: 5,
+    elevation: 2,
+    alignContent: 'stretch',
+    height: hp(75),
+  },
+  pokemonBox: {
+    paddingTop: hp(1),
+    paddingHorizontal: hp(2),
+    flexDirection: 'row',
+  },
+  pokemonImage: {
+    height: hp(9),
+    width: hp(9),
+    alignSelf: 'center',
+    backgroundColor: color.gray[3],
+    marginVertical: hp(0.3),
+    borderRadius: 5,
+  },
+  pokemonInfo: {
+    flexDirection: 'column',
+    justifyContent: 'flex-start',
+    paddingLeft: wp(5),
+    borderWidth: 1,
+    borderColor: 'transparent',
+    justifyContent: 'center',
+  },
+  pokemonName: {
+    fontSize: font.lg,
+    fontFamily: font.bold,
+    color: color.gray[2],
+    textTransform: 'capitalize',
+  },
+  pokemonId: {
+    fontSize: font.normal,
+    color: color.gray[0],
+    textTransform: 'capitalize',
+  },
+  carrouselFooter: {
+    marginTop: hp(1),
+    borderWidth: 1,
+    borderColor: color.white[0],
+    borderTopColor: color.gray[3],
+    width: '100%',
+    height: hp(9),
+    position: 'absolute',
+    bottom: 0,
+    borderRadius: 3,
+    justifyContent: 'flex-end',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
 });
