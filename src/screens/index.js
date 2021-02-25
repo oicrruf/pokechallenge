@@ -11,16 +11,25 @@ import {
   Image,
   Keyboard,
   StyleSheet,
+  ToastAndroid,
   TouchableWithoutFeedback,
   View,
-  ToastAndroid,
 } from 'react-native';
 import Spinner from 'react-native-loading-spinner-overlay';
-import {Button, Dialog, Portal, TextInput} from 'react-native-paper';
+import {
+  Button,
+  Dialog,
+  IconButton,
+  Portal,
+  TextInput,
+} from 'react-native-paper';
 import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from 'react-native-responsive-screen';
+import Carousel from 'react-native-snap-carousel';
+import Clipboard from '@react-native-clipboard/clipboard';
+import CryptoJS from 'react-native-crypto-js';
 
 firebase.firestore().settings({experimentalForceLongPolling: true});
 
@@ -109,7 +118,7 @@ export const Login = (props) => {
                 onPress={() => {
                   _login();
                 }}>
-                Register
+                Sign In
               </Button>
               <TouchableWithoutFeedback
                 onPress={() => {
@@ -633,7 +642,7 @@ export const Pokemons = (props) => {
   const {pokemons} = route.params;
   const [pokemonsEncounters, setPokemonsEncounters] = useState([]);
   const [counter, setCounter] = useState(0);
-  const [visible, setVisible] = React.useState(false);
+  const [visible, setVisible] = useState(false);
   const {email, uid} = firebase.auth().currentUser;
 
   const hideDialog = () => setVisible(false);
@@ -697,19 +706,10 @@ export const Pokemons = (props) => {
         <Dialog visible={visible} onDismiss={hideDialog}>
           <View style={{padding: 20}}>
             <Image
-              style={{
-                width: wp(40),
-                height: wp(60),
-                alignSelf: 'center',
-              }}
+              style={styles.imageModal}
               source={require('@pokechallenge/assets/images/sad.png')}
             />
-            <Text
-              style={{
-                fontSize: 16,
-                color: color.gray[1],
-                marginTop: 20,
-              }}>
+            <Text style={styles.textModal}>
               You cannot select more than six pokemons!
             </Text>
           </View>
@@ -788,28 +788,142 @@ export const Pokemons = (props) => {
 export const Groups = (props) => {
   const [loading, setLoading] = useState(true);
   const {email, uid} = firebase.auth().currentUser;
-  const route = useRoute();
+  const [group, setGroup] = useState([]);
+  const [visible, setVisible] = useState(false);
+  const [itemDelete, setItemDelete] = useState();
+  const [copiedText, setCopiedText] = useState('');
+  const hideDialog = () => setVisible(false);
+
   useEffect(() => {
-    if (email) {
-      setLoading(false);
-    }
-    console.log(email, uid);
-  }, []);
+    db.collection(uid)
+      .get()
+      .then((response) => {
+        const pokemons = [];
+        response.forEach((doc) => {
+          const data = doc.data();
+          data.id = doc.id;
+          pokemons.push(data);
+        });
+        pokemons.length == 0 && setLoading(false);
+        setGroup(pokemons);
+      });
+    group.length > 0 && setLoading(false);
+  }, [group]);
+
+  const renderItem = ({item, index}) => (
+    <TouchableWithoutFeedback
+      onPress={() => {
+        console.log(item);
+      }}>
+      <View style={groups.carrousel}>
+        {item.group.map((p, i) => {
+          return (
+            <View key={i} style={groups.pokemonBox}>
+              <Image
+                style={groups.pokemonImage}
+                source={{
+                  uri: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${parseInt(
+                    p.url.split('/')[p.url.split('/').length - 2],
+                  )}.png`,
+                }}
+              />
+              <View style={groups.pokemonInfo}>
+                <Text style={groups.pokemonName}>{p.name}</Text>
+                <Text style={groups.pokemonId}>
+                  {parseInt(p.url.split('/')[p.url.split('/').length - 2])}
+                </Text>
+              </View>
+            </View>
+          );
+        })}
+        <View style={groups.carrouselFooter}>
+          <IconButton
+            icon="delete"
+            color={color.gray[0]}
+            size={25}
+            onPress={() => {
+              setVisible(true), setItemDelete(item.id);
+            }}
+          />
+          <IconButton
+            icon="share"
+            color={color.gray[0]}
+            size={25}
+            onPress={() => {
+              Clipboard.setString(
+                CryptoJS.AES.encrypt(
+                  JSON.stringify({owner: uid, group: item.id}),
+                  '@pokechallenge',
+                ).toString(),
+              ),
+                ToastAndroid.show(
+                  'Your code is on the clipboard',
+                  ToastAndroid.LONG,
+                );
+            }}
+          />
+        </View>
+      </View>
+    </TouchableWithoutFeedback>
+  );
 
   return (
     <>
       <Spinner visible={loading} color={color.red[0]} />
-      <View style={styles.container}>
-        <Text>{route.name}</Text>
-        <Text>{email}</Text>
+      <Portal>
+        <Dialog visible={visible} onDismiss={hideDialog}>
+          <View style={{padding: 20}}>
+            <Image
+              style={styles.imageModal}
+              source={require('@pokechallenge/assets/images/sad.png')}
+            />
+            <Text style={styles.textModal}>
+              Are you sure you want to delete this group?
+            </Text>
+          </View>
+          <Dialog.Actions>
+            <Button onPress={() => setVisible(false)}>Cancel</Button>
+            <Button
+              onPress={() => {
+                db.collection(uid).doc(itemDelete).delete(), setVisible(false);
+              }}>
+              Ok
+            </Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
+      <View
+        style={[
+          styles.titleAction,
+          {height: 58, backgroundColor: color.white[0]},
+        ]}>
+        <Text style={styles.titleActionName}>
+          You have a total of {group.length} groups
+        </Text>
+      </View>
+      <View
+        style={[
+          styles.container,
+          {
+            backgroundColor: color.gray[4],
+            paddingVertical: hp(1),
+          },
+        ]}>
+        <Carousel
+          data={group}
+          renderItem={renderItem}
+          sliderWidth={wp(100)}
+          itemWidth={wp(80)}
+        />
       </View>
     </>
   );
 };
 
 export const Clone = (props) => {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const {email, uid} = firebase.auth().currentUser;
+  const [code, setCode] = useState('');
   const route = useRoute();
   useEffect(() => {
     if (email) {
@@ -820,11 +934,67 @@ export const Clone = (props) => {
 
   return (
     <>
-      <Spinner visible={loading} color={color.red[0]} />
-      <View style={styles.container}>
-        <Text>{route.name}</Text>
-        <Text>{email}</Text>
-      </View>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <View style={styles.container}>
+          <View style={{padding: wp(5)}}>
+            <TextInput
+              autoCorrect={false}
+              style={register.input}
+              label="Your code here"
+              onChangeText={(c) => setCode(c)}
+            />
+            <Button
+              style={{
+                backgroundColor: code == '' ? color.gray[0] : color.green[0],
+              }}
+              disabled={code == '' ? true : false}
+              contentStyle={{height: 35, flexDirection: 'row-reverse'}}
+              icon={'clipboard'}
+              mode="contained"
+              loading={loading}
+              uppercase={false}
+              labelStyle={{color: color.white[0]}}
+              onPress={() => {
+                setLoading(true);
+                let bytes = CryptoJS.AES.decrypt(code, '@pokechallenge');
+                let decrypted = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+                console.log(decrypted);
+                var doc = db.collection(decrypted.owner).doc(decrypted.group);
+                doc
+                  .get()
+                  .then((doc) => {
+                    if (doc.exists) {
+                      const save = async () => {
+                        const data = await doc.data();
+                        db.collection(uid)
+                          .add(data)
+                          .then(
+                            () =>
+                              ToastAndroid.show(
+                                'You have created a new group!',
+                                ToastAndroid.LONG,
+                              ),
+                            setCode(''),
+                          )
+                          .catch((e) => {
+                            console.log(e);
+                          });
+                      };
+                      save();
+                      setLoading(false);
+                    } else {
+                      console.log('No such document!');
+                    }
+                  })
+                  .catch(function (error) {
+                    console.log('Error getting document:', error);
+                  });
+              }}>
+              Clone Group
+            </Button>
+          </View>
+        </View>
+      </TouchableWithoutFeedback>
     </>
   );
 };
@@ -871,6 +1041,16 @@ const styles = StyleSheet.create({
     marginHorizontal: 3,
     marginBottom: 10,
     borderRadius: 5,
+  },
+  imageModal: {
+    width: wp(40),
+    height: wp(60),
+    alignSelf: 'center',
+  },
+  textModal: {
+    fontSize: 16,
+    color: color.gray[1],
+    marginTop: 20,
   },
 });
 
@@ -927,6 +1107,59 @@ const register = StyleSheet.create({
   },
 });
 
-const region = StyleSheet.create({
-  elementList: {textTransform: 'capitalize', fontFamily: font.regular},
+const groups = StyleSheet.create({
+  carrousel: {
+    backgroundColor: color.white[0],
+    marginVertical: wp(1),
+    marginHorizontal: wp(0),
+    borderRadius: 5,
+    paddingVertical: 5,
+
+    alignContent: 'stretch',
+    height: hp(75),
+  },
+  pokemonBox: {
+    paddingTop: hp(1),
+    paddingHorizontal: hp(2),
+    flexDirection: 'row',
+  },
+  pokemonImage: {
+    height: hp(9),
+    width: hp(9),
+    alignSelf: 'center',
+    backgroundColor: color.gray[3],
+    marginVertical: hp(0.3),
+    borderRadius: 5,
+  },
+  pokemonInfo: {
+    flexDirection: 'column',
+    justifyContent: 'flex-start',
+    paddingLeft: wp(5),
+    borderWidth: 1,
+    borderColor: 'transparent',
+    justifyContent: 'center',
+  },
+  pokemonName: {
+    fontSize: font.lg,
+    fontFamily: font.bold,
+    color: color.gray[2],
+    textTransform: 'capitalize',
+  },
+  pokemonId: {
+    fontSize: font.normal,
+    color: color.gray[0],
+    textTransform: 'capitalize',
+  },
+  carrouselFooter: {
+    marginTop: hp(1),
+    width: '100%',
+    height: hp(9),
+    position: 'absolute',
+    bottom: 0,
+    borderRadius: 3,
+    justifyContent: 'flex-end',
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: color.gray[1],
+  },
 });
