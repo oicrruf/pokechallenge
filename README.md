@@ -27,6 +27,21 @@ npx react-native run-android
 
 Esta aplicación ha sido diseñada y probada en entornos Windows y Android
 
+## Instructions
+
+- Para crear un grupo, el usuario debe navegar entre Region > Location > Area y seleccionar los pokemon disponibles, que pueden ser desde 3 y hasta 6 pokemons
+- Para clonar un grupo deberá darse click en la opción de compartir del grupo a clonar, esto enviará al portapapeles del dispositivo un código cifrado el cual deberá ser compartido he ingresado en la pantalla de clonación de grupos
+
+## Roadmap
+
+- Refactoización del código
+- Crear componente de modal para que pueda ser reutilizado
+- Separar componentes por tipo de pantalla en archivos diferentes
+- Extreaer funciones de persistencia y consulta en firebase
+- Validar formulario de "clonación" de grupos
+- Agregar opción de editar grupos
+- Mejorar diseño Drawer menú
+
 ## Disclaimer
 
 Se ha identificado un problema con la instalación de paquetes haciendo uso de yarn
