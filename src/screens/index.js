@@ -788,20 +788,91 @@ export const Pokemons = (props) => {
 export const Groups = (props) => {
   const [loading, setLoading] = useState(true);
   const {email, uid} = firebase.auth().currentUser;
-  const route = useRoute();
+  const [group, setGroup] = useState([]);
+
   useEffect(() => {
-    if (email) {
-      setLoading(false);
-    }
-    console.log(email, uid);
+    db.collection(uid)
+      .get()
+      .then((response) => {
+        const pokemons = [];
+        response.forEach((doc) => {
+          const data = doc.data();
+          data.id = doc.id;
+          pokemons.push(data);
+        });
+        setGroup(pokemons);
+      })
+      .then(setLoading(false));
+    console.log(group);
   }, []);
+
+  const keyExtractor = (item, index) => index.toString();
+
+  const renderItem = ({item, index}) => (
+    <TouchableWithoutFeedback
+      onPress={() => {
+        console.log(item);
+      }}>
+      <View
+        style={{
+          backgroundColor: color.white[0],
+          flexDirection: 'row',
+          marginVertical: wp(1),
+          marginHorizontal: wp(2),
+          borderRadius: 5,
+          paddingVertical: 5,
+          elevation: 2,
+        }}>
+        {item.group.map((p, i) => {
+          return (
+            <View
+              key={i}
+              style={{
+                height: wp(14),
+                width: wp(14),
+                marginHorizontal: wp(1),
+                borderRadius: 3,
+                justifyContent: 'center',
+              }}>
+              <Image
+                style={{height: wp(10), width: wp(10), alignSelf: 'center'}}
+                source={{
+                  uri: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${parseInt(
+                    p.url.split('/')[p.url.split('/').length - 2],
+                  )}.png`,
+                }}
+              />
+              <Text
+                style={{
+                  fontSize: 9,
+                  alignSelf: 'center',
+                  color: color.gray[2],
+                  textTransform: 'capitalize',
+                }}>
+                {p.name}
+              </Text>
+            </View>
+          );
+        })}
+      </View>
+    </TouchableWithoutFeedback>
+  );
 
   return (
     <>
       <Spinner visible={loading} color={color.red[0]} />
-      <View style={styles.container}>
-        <Text>{route.name}</Text>
-        <Text>{email}</Text>
+      <View style={[styles.titleAction, {height: 58}]}>
+        <Text style={styles.titleActionName}>My Groups</Text>
+        <Text style={styles.titleActionName}>{group.length}</Text>
+      </View>
+
+      <View style={[styles.container, {backgroundColor: color.gray[4]}]}>
+        <FlatList
+          scrollEnabled={true}
+          keyExtractor={keyExtractor}
+          data={group}
+          renderItem={renderItem}
+        />
       </View>
     </>
   );
