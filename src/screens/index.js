@@ -14,7 +14,6 @@ import {
   ToastAndroid,
   TouchableWithoutFeedback,
   View,
-  Alert,
 } from 'react-native';
 import Spinner from 'react-native-loading-spinner-overlay';
 import {
@@ -29,6 +28,8 @@ import {
   widthPercentageToDP as wp,
 } from 'react-native-responsive-screen';
 import Carousel from 'react-native-snap-carousel';
+import Clipboard from '@react-native-clipboard/clipboard';
+import CryptoJS from 'react-native-crypto-js';
 
 firebase.firestore().settings({experimentalForceLongPolling: true});
 
@@ -117,7 +118,7 @@ export const Login = (props) => {
                 onPress={() => {
                   _login();
                 }}>
-                Register
+                Sign In
               </Button>
               <TouchableWithoutFeedback
                 onPress={() => {
@@ -790,6 +791,7 @@ export const Groups = (props) => {
   const [group, setGroup] = useState([]);
   const [visible, setVisible] = useState(false);
   const [itemDelete, setItemDelete] = useState();
+  const [copiedText, setCopiedText] = useState('');
   const hideDialog = () => setVisible(false);
 
   useEffect(() => {
@@ -802,14 +804,17 @@ export const Groups = (props) => {
           data.id = doc.id;
           pokemons.push(data);
         });
+        pokemons.length == 0 && setLoading(false);
         setGroup(pokemons);
       });
     group.length > 0 && setLoading(false);
-    console.log(JSON.stringify(group, null, '  '));
   }, [group]);
 
   const renderItem = ({item, index}) => (
-    <TouchableWithoutFeedback>
+    <TouchableWithoutFeedback
+      onPress={() => {
+        console.log(item);
+      }}>
       <View style={groups.carrousel}>
         {item.group.map((p, i) => {
           return (
@@ -844,7 +849,18 @@ export const Groups = (props) => {
             icon="share"
             color={color.gray[0]}
             size={25}
-            onPress={() => console.log('Share')}
+            onPress={() => {
+              Clipboard.setString(
+                CryptoJS.AES.encrypt(
+                  JSON.stringify({owner: uid, group: item.id}),
+                  '@pokechallenge',
+                ).toString(),
+              ),
+                ToastAndroid.show(
+                  'Your code is on the clipboard',
+                  ToastAndroid.LONG,
+                );
+            }}
           />
         </View>
       </View>
@@ -897,7 +913,7 @@ export const Groups = (props) => {
           data={group}
           renderItem={renderItem}
           sliderWidth={wp(100)}
-          itemWidth={wp(90)}
+          itemWidth={wp(80)}
         />
       </View>
     </>
@@ -905,8 +921,9 @@ export const Groups = (props) => {
 };
 
 export const Clone = (props) => {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const {email, uid} = firebase.auth().currentUser;
+  const [code, setCode] = useState('');
   const route = useRoute();
   useEffect(() => {
     if (email) {
@@ -917,11 +934,67 @@ export const Clone = (props) => {
 
   return (
     <>
-      <Spinner visible={loading} color={color.red[0]} />
-      <View style={styles.container}>
-        <Text>{route.name}</Text>
-        <Text>{email}</Text>
-      </View>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <View style={styles.container}>
+          <View style={{padding: wp(5)}}>
+            <TextInput
+              autoCorrect={false}
+              style={register.input}
+              label="Your code here"
+              onChangeText={(c) => setCode(c)}
+            />
+            <Button
+              style={{
+                backgroundColor: code == '' ? color.gray[0] : color.green[0],
+              }}
+              disabled={code == '' ? true : false}
+              contentStyle={{height: 35, flexDirection: 'row-reverse'}}
+              icon={'clipboard'}
+              mode="contained"
+              loading={loading}
+              uppercase={false}
+              labelStyle={{color: color.white[0]}}
+              onPress={() => {
+                setLoading(true);
+                let bytes = CryptoJS.AES.decrypt(code, '@pokechallenge');
+                let decrypted = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+                console.log(decrypted);
+                var doc = db.collection(decrypted.owner).doc(decrypted.group);
+                doc
+                  .get()
+                  .then((doc) => {
+                    if (doc.exists) {
+                      const save = async () => {
+                        const data = await doc.data();
+                        db.collection(uid)
+                          .add(data)
+                          .then(
+                            () =>
+                              ToastAndroid.show(
+                                'You have created a new group!',
+                                ToastAndroid.LONG,
+                              ),
+                            setCode(''),
+                          )
+                          .catch((e) => {
+                            console.log(e);
+                          });
+                      };
+                      save();
+                      setLoading(false);
+                    } else {
+                      console.log('No such document!');
+                    }
+                  })
+                  .catch(function (error) {
+                    console.log('Error getting document:', error);
+                  });
+              }}>
+              Clone Group
+            </Button>
+          </View>
+        </View>
+      </TouchableWithoutFeedback>
     </>
   );
 };
@@ -1038,10 +1111,10 @@ const groups = StyleSheet.create({
   carrousel: {
     backgroundColor: color.white[0],
     marginVertical: wp(1),
-    marginHorizontal: wp(2),
+    marginHorizontal: wp(0),
     borderRadius: 5,
     paddingVertical: 5,
-    elevation: 2,
+
     alignContent: 'stretch',
     height: hp(75),
   },
@@ -1079,9 +1152,6 @@ const groups = StyleSheet.create({
   },
   carrouselFooter: {
     marginTop: hp(1),
-    borderWidth: 1,
-    borderColor: color.white[0],
-    borderTopColor: color.gray[3],
     width: '100%',
     height: hp(9),
     position: 'absolute',
@@ -1090,5 +1160,6 @@ const groups = StyleSheet.create({
     justifyContent: 'flex-end',
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: color.gray[1],
   },
 });
